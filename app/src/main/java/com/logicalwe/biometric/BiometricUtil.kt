@@ -125,8 +125,7 @@ object BiometricUtil {
                             subtitle: String = "Enter biometric credentials to proceed.",
                             description: String = "Input your Fingerprint or FaceID to ensure it's you!",
                             activity: AppCompatActivity, listener: BiometricAuthListener,
-                            cryptoObject: BiometricPrompt.CryptoObject? = null,
-                            allowDeviceCredential: Boolean = false) {
+                            cryptoObject: BiometricPrompt.CryptoObject? = null) {
         // Prepare BiometricPrompt Dialog
         val promptInfo = setBiometricPromptInfo(
             title, subtitle, description)
