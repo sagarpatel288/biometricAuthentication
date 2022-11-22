@@ -1,6 +1,5 @@
 package com.logicalwe.biometric
 
-import android.app.KeyguardManager
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -8,7 +7,6 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
-import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK
 import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
 import androidx.biometric.BiometricPrompt
 import androidx.core.app.ActivityCompat
@@ -45,7 +43,9 @@ object BiometricUtil {
                 listener.onBiometricAuthenticationPrompt()
             }
         }
-        return biometricManager.canAuthenticate(BIOMETRIC_STRONG or DEVICE_CREDENTIAL)
+        return if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P)
+            biometricManager.canAuthenticate()
+        else biometricManager.canAuthenticate(BIOMETRIC_STRONG or DEVICE_CREDENTIAL)
     }
 
     /**
@@ -69,6 +69,9 @@ object BiometricUtil {
               .setSubtitle(subtitle)
               .setDescription(description)
 
+        Log.d(
+            " :$LOG_APP_NAME: ",
+            "BiometricUtil: :setBiometricPromptInfo: allowDeviceCredentials: $allowDeviceCredential")
     // Use Device Credentials if allowed, otherwise show Cancel Button
     builder.apply {
       if (allowDeviceCredential) setDeviceCredentialAllowed(true)
@@ -130,7 +133,7 @@ object BiometricUtil {
                             description: String = "Input your Fingerprint or FaceID to ensure it's you!",
                             activity: AppCompatActivity, listener: BiometricAuthListener,
                             cryptoObject: BiometricPrompt.CryptoObject? = null,
-                            allowDeviceCredential: Boolean = true) {
+                            allowDeviceCredential: Boolean = false) {
         // Prepare BiometricPrompt Dialog
         val promptInfo = setBiometricPromptInfo(
             title, subtitle, description, allowDeviceCredential)
