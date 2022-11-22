@@ -45,7 +45,7 @@ object BiometricUtil {
                 listener.onBiometricAuthenticationPrompt()
             }
         }
-        return biometricManager.canAuthenticate()
+        return biometricManager.canAuthenticate(BIOMETRIC_STRONG or DEVICE_CREDENTIAL)
     }
 
     /**
