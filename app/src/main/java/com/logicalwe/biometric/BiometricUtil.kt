@@ -25,8 +25,6 @@ object BiometricUtil {
      * Checks if the device has Biometric support.
      * Returns [BiometricManager.BIOMETRIC_SUCCESS] If at least one biometric authentication is
      * present and enrolled.
-     * Different APIs (below 28, (28,29), 30 and above)
-     * TODO Needs to check in API below 28, 28 and 29
      */
     private fun hasBiometricCapability(context: Context, listener: BiometricAuthListener): Int {
         val biometricManager = BiometricManager.from(context)
@@ -70,22 +68,15 @@ object BiometricUtil {
               .setTitle(title)
               .setSubtitle(subtitle)
               .setDescription(description)
-              .setAllowedAuthenticators(BIOMETRIC_STRONG or DEVICE_CREDENTIAL)
 
-        // Use Device Credentials if allowed, otherwise show Cancel Button
-        builder.apply {
-            if (allowDeviceCredential) {
-                if (Build.VERSION.SDK_INT < 30) {
-                    Log.d(" :$LOG_APP_NAME: ", "BiometricUtil: :setBiometricPromptInfo: api less than 30")
-                    setDeviceCredentialAllowed(true)
-                } else {
-                    Log.d(" :$LOG_APP_NAME: ", "BiometricUtil: :setBiometricPromptInfo: api >= 30")
-                    setAllowedAuthenticators(BIOMETRIC_STRONG or DEVICE_CREDENTIAL)
-                }
-            } else setNegativeButtonText("Cancel")
-        }
-        return builder.build()
+    // Use Device Credentials if allowed, otherwise show Cancel Button
+    builder.apply {
+      if (allowDeviceCredential) setDeviceCredentialAllowed(true)
+      else setNegativeButtonText("Cancel")
     }
+
+    return builder.build()
+  }
 
     /**
      * Initializes BiometricPrompt with the caller and callback handlers
@@ -139,7 +130,7 @@ object BiometricUtil {
                             description: String = "Input your Fingerprint or FaceID to ensure it's you!",
                             activity: AppCompatActivity, listener: BiometricAuthListener,
                             cryptoObject: BiometricPrompt.CryptoObject? = null,
-                            allowDeviceCredential: Boolean = false) {
+                            allowDeviceCredential: Boolean = true) {
         // Prepare BiometricPrompt Dialog
         val promptInfo = setBiometricPromptInfo(
             title, subtitle, description, allowDeviceCredential)

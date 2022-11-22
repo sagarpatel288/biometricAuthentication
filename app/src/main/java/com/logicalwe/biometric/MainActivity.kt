@@ -24,14 +24,17 @@ const val BIOMETRIC_LAUNCH_CODE = 1
 class MainActivity : AppCompatActivity(),BiometricAuthListener {
 
     private lateinit var buttonBiometricsLogin: Button
+
     private val biometricAuthPromptLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult(), ActivityResultCallback {
-           onBiometricAuthPromptResult(it)
-    })
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            onBiometricAuthPromptResult(it)
+        }
 
     private fun onBiometricAuthPromptResult(activityResult: ActivityResult) {
         if (Activity.RESULT_OK == activityResult.resultCode) {
             Log.d(" :$LOG_APP_NAME: ", "MainActivity: :onBiometricAuthPromptResult: result ok")
+            showBiometricLoginOption()
+            onClickBiometrics(buttonBiometricsLogin)
         } else if (Activity.RESULT_CANCELED == activityResult.resultCode) {
             Log.d(" :$LOG_APP_NAME: ", "MainActivity: :onBiometricAuthPromptResult: result cancelled")
         } else {
@@ -70,10 +73,6 @@ class MainActivity : AppCompatActivity(),BiometricAuthListener {
     }
 
     override fun onBiometricAuthenticationPrompt() {
-        /*val enrollIntent = Intent(Settings.ACTION_BIOMETRIC_ENROLL).apply {
-            putExtra(EXTRA_BIOMETRIC_AUTHENTICATORS_ALLOWED,
-                     BIOMETRIC_STRONG or DEVICE_CREDENTIAL)
-        }*/
         val enrollIntent: Intent = when {
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> {
                 Intent(Settings.ACTION_BIOMETRIC_ENROLL)
