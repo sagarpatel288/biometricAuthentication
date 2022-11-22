@@ -62,24 +62,17 @@ object BiometricUtil {
      * Android 10 having no face id support, shows only fingerprint option.
      * [Official Link](https://developer.android.com/training/sign-in/biometric-auth#addt-resources)
      */
-    private fun setBiometricPromptInfo(title: String, subtitle: String, description: String,
-                                       allowDeviceCredential: Boolean): BiometricPrompt.PromptInfo {
-        val builder = BiometricPrompt.PromptInfo.Builder()
-              .setTitle(title)
-              .setSubtitle(subtitle)
-              .setDescription(description)
+    private fun setBiometricPromptInfo(title: String, subtitle: String,
+                                       description: String): BiometricPrompt.PromptInfo {
+        val builder =
+            BiometricPrompt.PromptInfo.Builder()
+                .setTitle(title)
+                .setSubtitle(subtitle)
+                .setDescription(description)
+                .setNegativeButtonText("Cancel")
 
-        Log.d(
-            " :$LOG_APP_NAME: ",
-            "BiometricUtil: :setBiometricPromptInfo: allowDeviceCredentials: $allowDeviceCredential")
-    // Use Device Credentials if allowed, otherwise show Cancel Button
-    builder.apply {
-      if (allowDeviceCredential) setDeviceCredentialAllowed(true)
-      else setNegativeButtonText("Cancel")
+        return builder.build()
     }
-
-    return builder.build()
-  }
 
     /**
      * Initializes BiometricPrompt with the caller and callback handlers
@@ -136,7 +129,7 @@ object BiometricUtil {
                             allowDeviceCredential: Boolean = false) {
         // Prepare BiometricPrompt Dialog
         val promptInfo = setBiometricPromptInfo(
-            title, subtitle, description, allowDeviceCredential)
+            title, subtitle, description)
 
         // Attach with caller and callback handler
         val biometricPrompt = initBiometricPrompt(activity, listener)
