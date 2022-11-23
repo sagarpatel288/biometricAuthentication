@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
+import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK
 import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
 import androidx.biometric.BiometricPrompt
 import androidx.core.app.ActivityCompat
@@ -82,14 +83,26 @@ object BiometricUtil {
      * Android 10 having no face id support, shows only fingerprint option.
      * [Official Link](https://developer.android.com/training/sign-in/biometric-auth#addt-resources)
      */
-    private fun setBiometricPromptInfo(title: String, subtitle: String,
+    private fun setBiometricPromptInfo(activity: AppCompatActivity, title: String, subtitle: String,
                                        description: String): BiometricPrompt.PromptInfo {
         val builder =
             BiometricPrompt.PromptInfo.Builder()
                 .setTitle(title)
                 .setSubtitle(subtitle)
                 .setDescription(description)
-                .setNegativeButtonText("Cancel")
+
+        // Use Device Credentials if allowed, otherwise show Cancel Button
+        builder.apply {
+                if (Build.VERSION.SDK_INT < 30) {
+                    Log.d(" :$LOG_APP_NAME: ", "BiometricUtil: :setBiometricPromptInfo: api less than 30")
+                    Toast.makeText(activity, "API less than 30", Toast.LENGTH_SHORT).show()
+                    setDeviceCredentialAllowed(true)
+                } else {
+                    Log.d(" :$LOG_APP_NAME: ", "BiometricUtil: :setBiometricPromptInfo: api >= 30")
+                    Toast.makeText(activity, "API 30 or higher", Toast.LENGTH_SHORT).show()
+                    setAllowedAuthenticators(BIOMETRIC_STRONG or BIOMETRIC_WEAK or DEVICE_CREDENTIAL)
+                }
+        }
 
         return builder.build()
     }
@@ -157,7 +170,7 @@ object BiometricUtil {
                             cryptoObject: BiometricPrompt.CryptoObject? = null) {
         // Prepare BiometricPrompt Dialog
         val promptInfo = setBiometricPromptInfo(
-            title, subtitle, description)
+            activity, title, subtitle, description)
 
         // Attach with caller and callback handler
         val biometricPrompt = initBiometricPrompt(activity, listener)
