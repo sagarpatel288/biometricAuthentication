@@ -18,6 +18,7 @@ const val LOG_APP_NAME = " :biometricPoc: "
 
 /**
  * Helper class for managing Biometric Authentication Process
+ * [Reference Tutorial](https://www.kodeco.com/18782293-android-biometric-api-getting-started)
  */
 object BiometricUtil {
 
@@ -91,17 +92,33 @@ object BiometricUtil {
                 .setSubtitle(subtitle)
                 .setDescription(description)
 
-        // Use Device Credentials if allowed, otherwise show Cancel Button
-        builder.apply {
-                if (Build.VERSION.SDK_INT < 30) {
-                    Log.d(" :$LOG_APP_NAME: ", "BiometricUtil: :setBiometricPromptInfo: api less than 30")
-                    Toast.makeText(activity, "API less than 30", Toast.LENGTH_SHORT).show()
-                    setDeviceCredentialAllowed(true)
-                } else {
-                    Log.d(" :$LOG_APP_NAME: ", "BiometricUtil: :setBiometricPromptInfo: api >= 30")
-                    Toast.makeText(activity, "API 30 or higher", Toast.LENGTH_SHORT).show()
-                    setAllowedAuthenticators(BIOMETRIC_STRONG or BIOMETRIC_WEAK or DEVICE_CREDENTIAL)
-                }
+        try {// Use Device Credentials if allowed, otherwise show Cancel Button
+            builder.apply {
+                    try {
+                        if (Build.VERSION.SDK_INT >= 30) {
+                            Log.d(" :$LOG_APP_NAME: ", "BiometricUtil: :setBiometricPromptInfo: api >= 30")
+                            Toast.makeText(activity, "API 30 or higher", Toast.LENGTH_SHORT).show()
+                            setAllowedAuthenticators(BIOMETRIC_STRONG or BIOMETRIC_WEAK or DEVICE_CREDENTIAL)
+                        } else {
+                            Log.d(" :$LOG_APP_NAME: ", "BiometricUtil: :setBiometricPromptInfo: api less than 30")
+                            Toast.makeText(activity, "API less than 30", Toast.LENGTH_SHORT).show()
+                            // When the user selects Pin/Pattern/Password, (anything other than biometric auth), the biometric
+                            // callback is cancelled after the process death.
+                            // Ref: https://issuetracker.google.com/issues/143653944#comment9
+                            // Why to remove the negative button when we set it true?
+                            // They do not work together!
+                            // Ref: https://developer.android.com/training/sign-in/biometric-auth#allow-fallback
+                            setDeviceCredentialAllowed(true)
+//                            setNegativeButtonText("Cancel")
+                        }
+                    } catch (e: Exception) {
+                        Log.d(" :$LOG_APP_NAME: ", "BiometricUtil: :setBiometricPromptInfo: exception: ${e.message}")
+                        Toast.makeText(activity, "exception: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+            }
+        } catch (e: Exception) {
+            Log.d(" :$LOG_APP_NAME: ", "BiometricUtil: :setBiometricPromptInfo: exception: ${e.message}")
+            Toast.makeText(activity, "exception: ${e.message}", Toast.LENGTH_SHORT).show()
         }
 
         return builder.build()

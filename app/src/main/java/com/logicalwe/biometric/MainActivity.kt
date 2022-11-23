@@ -17,6 +17,9 @@ import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
 import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
 import androidx.biometric.BiometricPrompt
 
+/**
+ * [Reference Tutorial](https://www.kodeco.com/18782293-android-biometric-api-getting-started)
+ */
 class MainActivity : AppCompatActivity(), BiometricAuthListener {
 
     private lateinit var buttonBiometricsLogin: Button
