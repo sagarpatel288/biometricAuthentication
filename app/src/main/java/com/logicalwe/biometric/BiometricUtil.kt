@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
@@ -29,18 +30,37 @@ object BiometricUtil {
         when (biometricManager.canAuthenticate(BIOMETRIC_STRONG or DEVICE_CREDENTIAL)) {
             BiometricManager.BIOMETRIC_SUCCESS -> {
                 Log.d(" :$LOG_APP_NAME: ", "BiometricUtil: :hasBiometricCapability: biometric success")
+                Toast.makeText(context, "hasBiometricCapability: biometric success", Toast.LENGTH_SHORT).show()
             }
             BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE -> {
                 Log.d(" :$LOG_APP_NAME: ", "BiometricUtil: :hasBiometricCapability: no hardware, biometric unavailable")
+                Toast.makeText(context, "hasBiometricCapability: no hardware, biometric unavailable", Toast.LENGTH_SHORT).show()
             }
             BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE -> {
                 Log.d(
                     " :$LOG_APP_NAME: ",
                     "BiometricUtil: :hasBiometricCapability: hw unavailable, biometric unavailable")
+                Toast.makeText(context, "hasBiometricCapability: hw unavailable, biometric unavailable", Toast
+                    .LENGTH_SHORT).show()
             }
             BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED -> {
+                // TODO by sagar patel: 22/11/22 API 31, 32 are falling here when no security is set
                 Log.d(" :$LOG_APP_NAME: ", "BiometricUtil: :hasBiometricCapability: none enrolled, prompting")
+                Toast.makeText(context, "hasBiometricCapability: none enrolled, prompting", Toast.LENGTH_SHORT).show()
                 listener.onBiometricAuthenticationPrompt()
+            }
+            BiometricManager.BIOMETRIC_ERROR_UNSUPPORTED -> {
+                // TODO by sagar patel: 22/11/22 API 28 is falling here with and without security
+                Log.d(" :$LOG_APP_NAME: ", "BiometricUtil: :hasBiometricCapability: unsupported")
+                Toast.makeText(context, "hasBiometricCapability: unsupported", Toast.LENGTH_SHORT).show()
+            }
+            BiometricManager.BIOMETRIC_ERROR_SECURITY_UPDATE_REQUIRED -> {
+                Log.d(" :$LOG_APP_NAME: ", "BiometricUtil: :hasBiometricCapability: security update required")
+                Toast.makeText(context, "hasBiometricCapability: security update required", Toast.LENGTH_SHORT).show()
+            }
+            BiometricManager.BIOMETRIC_STATUS_UNKNOWN -> {
+                Log.d(" :$LOG_APP_NAME: ", "BiometricUtil: :hasBiometricCapability: unknown")
+                Toast.makeText(context, "hasBiometricCapability: unknown", Toast.LENGTH_SHORT).show()
             }
         }
         return if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P)
@@ -88,12 +108,15 @@ object BiometricUtil {
                 Log.d(
                     " :$LOG_APP_NAME: ",
                     "BiometricUtil: :onAuthenticationError: errorCode: $errorCode errorMessage: $errString")
-                listener.onBiometricAuthenticationError(errorCode, errString.toString())
+                Toast.makeText(activity, "onAuthenticationError: code: $errorCode message: " +
+                        "$errString", Toast.LENGTH_SHORT).show()
+                listener.onBiometricAuthenticationPrompt()
             }
 
             override fun onAuthenticationFailed() {
                 super.onAuthenticationFailed()
                 Log.d(" :$LOG_APP_NAME: ", "BiometricUtil: :onAuthenticationFailed: ")
+                Toast.makeText(activity, "onAuthenticationFailed: ", Toast.LENGTH_SHORT).show()
             }
 
             override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
@@ -102,14 +125,20 @@ object BiometricUtil {
                 when (result.authenticationType) {
                     BiometricPrompt.AUTHENTICATION_RESULT_TYPE_BIOMETRIC -> {
                         Log.d(" :$LOG_APP_NAME: ", "BiometricUtil: :onAuthenticationSucceeded: auth type biometric")
+                        Toast.makeText(activity, "onAuthenticationSucceeded: auth type biometric: ",
+                                       Toast.LENGTH_SHORT).show()
                     }
                     BiometricPrompt.AUTHENTICATION_RESULT_TYPE_DEVICE_CREDENTIAL -> {
                         Log.d(
                             " :$LOG_APP_NAME: ",
                             "BiometricUtil: :onAuthenticationSucceeded: auth type device credentials")
+                        Toast.makeText(activity, "onAuthenticationSucceeded: auth type device " +
+                                "credentials: ", Toast.LENGTH_SHORT).show()
                     }
                     BiometricPrompt.AUTHENTICATION_RESULT_TYPE_UNKNOWN -> {
                         Log.d(" :$LOG_APP_NAME: ", "BiometricUtil: :onAuthenticationSucceeded: auth type unknown")
+                        Toast.makeText(activity, "onAuthenticationSucceeded: auth type unknown: ",
+                                       Toast.LENGTH_SHORT).show()
                     }
                 }
                 listener.onBiometricAuthenticationSuccess(result)
@@ -121,9 +150,9 @@ object BiometricUtil {
     /**
      * Displays a BiometricPrompt with provided configurations
      */
-    fun showBiometricPrompt(title: String = "Biometric Authentication",
-                            subtitle: String = "Enter biometric credentials to proceed.",
-                            description: String = "Input your Fingerprint or FaceID to ensure it's you!",
+    fun showBiometricPrompt(title: String = "Custom Title",
+                            subtitle: String = "Custom Sub-Title",
+                            description: String = "Custom Description",
                             activity: AppCompatActivity, listener: BiometricAuthListener,
                             cryptoObject: BiometricPrompt.CryptoObject? = null) {
         // Prepare BiometricPrompt Dialog

@@ -31,12 +31,14 @@ class MainActivity : AppCompatActivity(),BiometricAuthListener {
     private fun onBiometricAuthPromptResult(activityResult: ActivityResult) {
         if (Activity.RESULT_OK == activityResult.resultCode) {
             Log.d(" :$LOG_APP_NAME: ", "MainActivity: :onBiometricAuthPromptResult: result ok")
+            Toast.makeText(this, "onBiometricAuthPromptResult: result ok ", Toast.LENGTH_SHORT).show()
             showBiometricLoginOption()
-            onClickBiometrics(buttonBiometricsLogin)
         } else if (Activity.RESULT_CANCELED == activityResult.resultCode) {
             Log.d(" :$LOG_APP_NAME: ", "MainActivity: :onBiometricAuthPromptResult: result cancelled")
+            Toast.makeText(this, "onBiometricAuthPromptResult: result cancelled", Toast.LENGTH_SHORT).show()
         } else {
             Log.d(" :$LOG_APP_NAME: ", "MainActivity: :onBiometricAuthPromptResult: unknown error")
+            Toast.makeText(this, "onBiometricAuthPromptResult: unknown error", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -57,13 +59,13 @@ class MainActivity : AppCompatActivity(),BiometricAuthListener {
     }
 
     override fun onBiometricAuthenticationSuccess(result: BiometricPrompt.AuthenticationResult) {
-        Toast.makeText(this, "Biometric success", Toast.LENGTH_SHORT)
-            .show()
+        Log.d(" :$LOG_APP_NAME: ", "MainActivity: :onBiometricAuthenticationSuccess: ")
+        Toast.makeText(this, "onBiometricAuthenticationSuccess: ", Toast.LENGTH_SHORT).show()
     }
 
     override fun onBiometricAuthenticationError(errorCode: Int, errorMessage: String) {
-        Toast.makeText(this, "Biometric login. Error: $errorMessage", Toast.LENGTH_SHORT)
-            .show()
+        Log.d(" :$LOG_APP_NAME: ", "MainActivity: :onBiometricAuthenticationError: ")
+        Toast.makeText(this, "onBiometricAuthenticationError: ", Toast.LENGTH_SHORT).show()
     }
 
     override fun onBiometricAuthenticationPrompt() {
