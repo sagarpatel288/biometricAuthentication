@@ -17,11 +17,10 @@ import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
 import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
 import androidx.biometric.BiometricPrompt
 
-const val BIOMETRIC_LAUNCH_CODE = 1
-
-class MainActivity : AppCompatActivity(),BiometricAuthListener {
+class MainActivity : AppCompatActivity(), BiometricAuthListener {
 
     private lateinit var buttonBiometricsLogin: Button
+    private lateinit var buttonBiometricsEnroll: Button
 
     private val biometricAuthPromptLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -47,9 +46,16 @@ class MainActivity : AppCompatActivity(),BiometricAuthListener {
         setContentView(R.layout.activity_main)
 
         buttonBiometricsLogin = findViewById(R.id.buttonBiometricsLogin)
-
+        buttonBiometricsEnroll = findViewById(R.id.buttonBiometricsEnroll)
         //button visibility
         showBiometricLoginOption()
+        setClickListeners()
+    }
+
+    private fun setClickListeners() {
+        buttonBiometricsEnroll.setOnClickListener {
+            onBiometricAuthenticationPrompt()
+        }
     }
 
 
@@ -85,8 +91,9 @@ class MainActivity : AppCompatActivity(),BiometricAuthListener {
     }
 
     private fun showBiometricLoginOption() {
-        buttonBiometricsLogin.visibility =
-            if (BiometricUtil.isBiometricReady(this, this)) View.VISIBLE
-            else View.GONE
+        buttonBiometricsLogin.visibility = if (BiometricUtil.isBiometricReady(this, this)) View.VISIBLE
+        else View.GONE
+        buttonBiometricsEnroll.visibility = if (BiometricUtil.isBiometricReady(this, this)) View.GONE
+        else View.VISIBLE
     }
 }

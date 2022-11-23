@@ -115,6 +115,8 @@ object BiometricUtil {
         val executor = ContextCompat.getMainExecutor(activity)
 
         // Attach callback handlers
+        // The callback is cancelled if the user selects PIN/Pattern/Password in Android 9
+        // https://issuetracker.google.com/issues/143653944
         val callback = object : BiometricPrompt.AuthenticationCallback() {
             override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
                 super.onAuthenticationError(errorCode, errString)
@@ -123,7 +125,7 @@ object BiometricUtil {
                     "BiometricUtil: :onAuthenticationError: errorCode: $errorCode errorMessage: $errString")
                 Toast.makeText(activity, "onAuthenticationError: code: $errorCode message: " +
                         "$errString", Toast.LENGTH_SHORT).show()
-                listener.onBiometricAuthenticationPrompt()
+                hasBiometricCapability(activity, listener)
             }
 
             override fun onAuthenticationFailed() {
