@@ -50,9 +50,13 @@ class MainActivity : AppCompatActivity(), BiometricAuthListener {
 
         buttonBiometricsLogin = findViewById(R.id.buttonBiometricsLogin)
         buttonBiometricsEnroll = findViewById(R.id.buttonBiometricsEnroll)
+        setClickListeners()
+    }
+
+    override fun onResume() {
+        super.onResume()
         //button visibility
         showBiometricLoginOption()
-        setClickListeners()
     }
 
     private fun setClickListeners() {
