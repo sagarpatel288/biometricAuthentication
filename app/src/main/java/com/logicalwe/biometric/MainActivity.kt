@@ -34,6 +34,7 @@ class MainActivity : AppCompatActivity(), BiometricAuthListener {
         if (Activity.RESULT_OK == activityResult.resultCode) {
             Log.d(" :$LOG_APP_NAME: ", "MainActivity: :onBiometricAuthPromptResult: result ok")
             Toast.makeText(this, "onBiometricAuthPromptResult: result ok ", Toast.LENGTH_SHORT).show()
+            // Show / hide UI based on biometric authentication capability
             showBiometricLoginOption()
         } else if (Activity.RESULT_CANCELED == activityResult.resultCode) {
             Log.d(" :$LOG_APP_NAME: ", "MainActivity: :onBiometricAuthPromptResult: result cancelled")

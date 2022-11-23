@@ -36,14 +36,19 @@ object BiometricUtil {
             }
             BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE -> {
                 Log.d(" :$LOG_APP_NAME: ", "BiometricUtil: :hasBiometricCapability: no hardware, biometric unavailable")
-                Toast.makeText(context, "hasBiometricCapability: no hardware, biometric unavailable", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    "hasBiometricCapability: no hardware, biometric unavailable",
+                    Toast.LENGTH_SHORT).show()
             }
             BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE -> {
                 Log.d(
                     " :$LOG_APP_NAME: ",
                     "BiometricUtil: :hasBiometricCapability: hw unavailable, biometric unavailable")
-                Toast.makeText(context, "hasBiometricCapability: hw unavailable, biometric unavailable", Toast
-                    .LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    "hasBiometricCapability: hw unavailable, biometric unavailable",
+                    Toast.LENGTH_SHORT).show()
             }
             BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED -> {
                 // TODO by sagar patel: 22/11/22 API 31, 32 are falling here when no security is set
@@ -65,8 +70,7 @@ object BiometricUtil {
                 Toast.makeText(context, "hasBiometricCapability: unknown", Toast.LENGTH_SHORT).show()
             }
         }
-        return if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P)
-            biometricManager.canAuthenticate()
+        return if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) biometricManager.canAuthenticate()
         else biometricManager.canAuthenticate(BIOMETRIC_STRONG or DEVICE_CREDENTIAL)
     }
 
@@ -79,46 +83,32 @@ object BiometricUtil {
 
     /**
      * Prepares PromptInfo dialog with provided configuration.
-     * It can have either fingerprint or face or both depending upon different API.
-     * Android 12 shows both the fingerprint and face options.
-     * Android 10 having no face id support, shows only fingerprint option.
-     * [Official Link](https://developer.android.com/training/sign-in/biometric-auth#addt-resources)
+     * It can have a fingerprint, a face detection or device credentials depending upon different API and settings.
+     * [Official Link](https://developer.android.com/training/sign-in/biometric-auth)
      */
     private fun setBiometricPromptInfo(activity: AppCompatActivity, title: String, subtitle: String,
                                        description: String): BiometricPrompt.PromptInfo {
         val builder =
-            BiometricPrompt.PromptInfo.Builder()
-                .setTitle(title)
-                .setSubtitle(subtitle)
-                .setDescription(description)
+            BiometricPrompt.PromptInfo.Builder().setTitle(title).setSubtitle(subtitle).setDescription(description)
 
-        try {// Use Device Credentials if allowed, otherwise show Cancel Button
-            builder.apply {
-                    try {
-                        if (Build.VERSION.SDK_INT >= 30) {
-                            Log.d(" :$LOG_APP_NAME: ", "BiometricUtil: :setBiometricPromptInfo: api >= 30")
-                            Toast.makeText(activity, "API 30 or higher", Toast.LENGTH_SHORT).show()
-                            setAllowedAuthenticators(BIOMETRIC_STRONG or BIOMETRIC_WEAK or DEVICE_CREDENTIAL)
-                        } else {
-                            Log.d(" :$LOG_APP_NAME: ", "BiometricUtil: :setBiometricPromptInfo: api less than 30")
-                            Toast.makeText(activity, "API less than 30", Toast.LENGTH_SHORT).show()
-                            // When the user selects Pin/Pattern/Password, (anything other than biometric auth), the biometric
-                            // callback is cancelled after the process death.
-                            // Ref: https://issuetracker.google.com/issues/143653944#comment9
-                            // Why to remove the negative button when we set it true?
-                            // They do not work together!
-                            // Ref: https://developer.android.com/training/sign-in/biometric-auth#allow-fallback
-                            setDeviceCredentialAllowed(true)
+        // Either allow the Device Credentials or show the "Cancel" button
+        builder.apply {
+            if (Build.VERSION.SDK_INT >= 30) {
+                Log.d(" :$LOG_APP_NAME: ", "BiometricUtil: :setBiometricPromptInfo: api >= 30")
+                Toast.makeText(activity, "API 30 or higher", Toast.LENGTH_SHORT).show()
+                setAllowedAuthenticators(BIOMETRIC_STRONG or BIOMETRIC_WEAK or DEVICE_CREDENTIAL)
+            } else {
+                Log.d(" :$LOG_APP_NAME: ", "BiometricUtil: :setBiometricPromptInfo: api less than 30")
+                Toast.makeText(activity, "API less than 30", Toast.LENGTH_SHORT).show()
+                // When the user selects Pin/Pattern/Password, (anything other than biometric auth), the biometric
+                // callback is cancelled after the process death.
+                // Ref: https://issuetracker.google.com/issues/143653944#comment9
+                // Why to remove the negative button when we set it true?
+                // They do not work together!
+                // Ref: https://developer.android.com/training/sign-in/biometric-auth#allow-fallback
+                setDeviceCredentialAllowed(true)
 //                            setNegativeButtonText("Cancel")
-                        }
-                    } catch (e: Exception) {
-                        Log.d(" :$LOG_APP_NAME: ", "BiometricUtil: :setBiometricPromptInfo: exception: ${e.message}")
-                        Toast.makeText(activity, "exception: ${e.message}", Toast.LENGTH_SHORT).show()
-                    }
             }
-        } catch (e: Exception) {
-            Log.d(" :$LOG_APP_NAME: ", "BiometricUtil: :setBiometricPromptInfo: exception: ${e.message}")
-            Toast.makeText(activity, "exception: ${e.message}", Toast.LENGTH_SHORT).show()
         }
 
         return builder.build()
@@ -132,7 +122,7 @@ object BiometricUtil {
         val executor = ContextCompat.getMainExecutor(activity)
 
         // Attach callback handlers
-        // The callback is cancelled if the user selects PIN/Pattern/Password in Android 9
+        // The callback is cancelled after a process death if the user selects PIN/Pattern/Password
         // https://issuetracker.google.com/issues/143653944
         val callback = object : BiometricPrompt.AuthenticationCallback() {
             override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
@@ -140,8 +130,9 @@ object BiometricUtil {
                 Log.d(
                     " :$LOG_APP_NAME: ",
                     "BiometricUtil: :onAuthenticationError: errorCode: $errorCode errorMessage: $errString")
-                Toast.makeText(activity, "onAuthenticationError: code: $errorCode message: " +
-                        "$errString", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    activity, "onAuthenticationError: code: $errorCode message: $errString",
+                    Toast.LENGTH_SHORT).show()
                 hasBiometricCapability(activity, listener)
             }
 
@@ -157,20 +148,22 @@ object BiometricUtil {
                 when (result.authenticationType) {
                     BiometricPrompt.AUTHENTICATION_RESULT_TYPE_BIOMETRIC -> {
                         Log.d(" :$LOG_APP_NAME: ", "BiometricUtil: :onAuthenticationSucceeded: auth type biometric")
-                        Toast.makeText(activity, "onAuthenticationSucceeded: auth type biometric: ",
-                                       Toast.LENGTH_SHORT).show()
+                        Toast.makeText(activity, "onAuthenticationSucceeded: auth type biometric: ", Toast.LENGTH_SHORT)
+                            .show()
                     }
                     BiometricPrompt.AUTHENTICATION_RESULT_TYPE_DEVICE_CREDENTIAL -> {
                         Log.d(
                             " :$LOG_APP_NAME: ",
                             "BiometricUtil: :onAuthenticationSucceeded: auth type device credentials")
-                        Toast.makeText(activity, "onAuthenticationSucceeded: auth type device " +
-                                "credentials: ", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            activity,
+                            "onAuthenticationSucceeded: auth type device " + "credentials: ",
+                            Toast.LENGTH_SHORT).show()
                     }
                     BiometricPrompt.AUTHENTICATION_RESULT_TYPE_UNKNOWN -> {
                         Log.d(" :$LOG_APP_NAME: ", "BiometricUtil: :onAuthenticationSucceeded: auth type unknown")
-                        Toast.makeText(activity, "onAuthenticationSucceeded: auth type unknown: ",
-                                       Toast.LENGTH_SHORT).show()
+                        Toast.makeText(activity, "onAuthenticationSucceeded: auth type unknown: ", Toast.LENGTH_SHORT)
+                            .show()
                     }
                 }
                 listener.onBiometricAuthenticationSuccess(result)
@@ -182,11 +175,9 @@ object BiometricUtil {
     /**
      * Displays a BiometricPrompt with provided configurations
      */
-    fun showBiometricPrompt(title: String = "Custom Title",
-                            subtitle: String = "Custom Sub-Title",
-                            description: String = "Custom Description",
-                            activity: AppCompatActivity, listener: BiometricAuthListener,
-                            cryptoObject: BiometricPrompt.CryptoObject? = null) {
+    fun showBiometricPrompt(title: String = "Custom Title", subtitle: String = "Custom Sub-Title",
+                            description: String = "Custom Description", activity: AppCompatActivity,
+                            listener: BiometricAuthListener, cryptoObject: BiometricPrompt.CryptoObject? = null) {
         // Prepare BiometricPrompt Dialog
         val promptInfo = setBiometricPromptInfo(
             activity, title, subtitle, description)
