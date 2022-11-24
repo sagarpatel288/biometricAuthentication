@@ -29,7 +29,16 @@ object BiometricUtil {
      */
     private fun hasBiometricCapability(context: Context, listener: BiometricAuthListener): Int {
         val biometricManager = BiometricManager.from(context)
-        when (biometricManager.canAuthenticate(BIOMETRIC_STRONG or DEVICE_CREDENTIAL)) {
+        return if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) biometricManager.canAuthenticate()
+        else biometricManager.canAuthenticate(BIOMETRIC_STRONG or BIOMETRIC_WEAK or DEVICE_CREDENTIAL)
+    }
+
+    /**
+     * Optional. If we want to check the reason behind the biometric authentication unavailability.
+     */
+    fun onErrorBiometricReadiness(context: Context, listener: BiometricAuthListener) {
+        val biometricManager = BiometricManager.from(context)
+        when (biometricManager.canAuthenticate(BIOMETRIC_STRONG or BIOMETRIC_WEAK or DEVICE_CREDENTIAL)) {
             BiometricManager.BIOMETRIC_SUCCESS -> {
                 Log.d(" :$LOG_APP_NAME: ", "BiometricUtil: :hasBiometricCapability: biometric success")
                 Toast.makeText(context, "hasBiometricCapability: biometric success", Toast.LENGTH_SHORT).show()
@@ -70,8 +79,6 @@ object BiometricUtil {
                 Toast.makeText(context, "hasBiometricCapability: unknown", Toast.LENGTH_SHORT).show()
             }
         }
-        return if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) biometricManager.canAuthenticate()
-        else biometricManager.canAuthenticate(BIOMETRIC_STRONG or DEVICE_CREDENTIAL)
     }
 
     /**

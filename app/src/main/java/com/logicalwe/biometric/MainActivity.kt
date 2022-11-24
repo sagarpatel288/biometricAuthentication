@@ -99,9 +99,13 @@ class MainActivity : AppCompatActivity(), BiometricAuthListener {
     }
 
     private fun showBiometricLoginOption() {
-        buttonBiometricsLogin.visibility = if (BiometricUtil.isBiometricReady(this, this)) View.VISIBLE
-        else View.GONE
-        buttonBiometricsEnroll.visibility = if (BiometricUtil.isBiometricReady(this, this)) View.GONE
-        else View.VISIBLE
+        val isBiometricReady = BiometricUtil.isBiometricReady(this, this)
+        if (isBiometricReady) {
+            buttonBiometricsLogin.visibility = View.VISIBLE
+            buttonBiometricsEnroll.visibility = View.GONE
+        } else {
+            buttonBiometricsLogin.visibility = View.GONE
+            buttonBiometricsEnroll.visibility = View.VISIBLE
+        }
     }
 }
